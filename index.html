@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Home Base — Mac Mini Setup Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        natalia: { light: '#faf5ff', DEFAULT: '#a855f7', dark: '#7e22ce', border: '#e9d5ff' },
+                        nityesh: { light: '#eff6ff', DEFAULT: '#3b82f6', dark: '#1d4ed8', border: '#bfdbfe' },
+                        surface: { DEFAULT: '#ffffff', muted: '#f8fafc', dim: '#f1f5f9' },
+                        ink: { DEFAULT: '#0f172a', muted: '#475569', light: '#94a3b8' },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'SF Mono', 'Menlo', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Toggle transitions */
+        [data-role] { transition: opacity 0.3s ease, max-height 0.4s ease, margin 0.3s ease, padding 0.3s ease; overflow: hidden; }
+        .view-natalia [data-role="nityesh"] { opacity: 0; max-height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; pointer-events: none; }
+        .view-nityesh [data-role="natalia"] { opacity: 0; max-height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; pointer-events: none; }
+        [data-role="both"], .view-natalia [data-role="natalia"], .view-nityesh [data-role="nityesh"], .view-all [data-role] { opacity: 1; max-height: 2000px; }
+
+        /* Accordion */
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+        .accordion-content.open { max-height: 800px; }
+        .accordion-chevron { transition: transform 0.25s ease; }
+        .accordion-chevron.open { transform: rotate(180deg); }
+
+        /* Role badges */
+        .badge-natalia { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .badge-nityesh { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge-both { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* Architecture diagram */
+        .arch-node { backdrop-filter: blur(8px); }
+        .arch-line { height: 2px; background: linear-gradient(90deg, #e2e8f0, #94a3b8, #e2e8f0); }
+        .arch-line-v { width: 2px; background: linear-gradient(180deg, #e2e8f0, #94a3b8, #e2e8f0); }
+
+        /* Code blocks */
+        .code-block { background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; }
+        .code-block .comment { color: #64748b; }
+        .code-block .cmd { color: #38bdf8; }
+        .code-block .flag { color: #a78bfa; }
+        .code-block .string { color: #34d399; }
+
+        /* Checklist */
+        .checklist li { position: relative; padding-left: 2rem; }
+        .checklist li::before { content: ''; position: absolute; left: 0; top: 0.35rem; width: 1.25rem; height: 1.25rem; border: 2px solid #cbd5e1; border-radius: 0.375rem; }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Sticky nav shadow */
+        .nav-stuck { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body class="bg-surface font-sans text-ink antialiased view-all">
+
+    <!-- Navigation -->
+    <nav id="nav" class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-100">
+        <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <span class="font-bold text-sm tracking-tight">AI Home Base</span>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="flex items-center bg-slate-100 rounded-full p-1 text-sm">
+                <button onclick="setView('all')" id="btn-all" class="px-3 py-1.5 rounded-full font-medium transition-all bg-white shadow-sm text-ink">All</button>
+                <button onclick="setView('natalia')" id="btn-natalia" class="px-3 py-1.5 rounded-full font-medium transition-all text-ink-muted hover:text-ink">For Natalia</button>
+                <button onclick="setView('nityesh')" id="btn-nityesh" class="px-3 py-1.5 rounded-full font-medium transition-all text-ink-muted hover:text-ink">For Nityesh</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-6">
+
+        <!-- Hero -->
+        <section class="pt-16 pb-12">
+            <p class="text-sm font-medium text-ink-muted tracking-wide uppercase mb-4">Every Consulting Infrastructure</p>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1] mb-6">
+                Your AI team,<br>
+                <span class="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">always on.</span>
+            </h1>
+            <p class="text-lg text-ink-muted leading-relaxed max-w-2xl">
+                A Mac Mini in New York running your AI co-workers 24/7. DM Claudie, Jean-Claude, or any teammate in Slack — they respond with full access to your tools, files, and context. No API costs. No cloud dependency. You own the whole stack.
+            </p>
+        </section>
+
+        <!-- Why Not OpenClaw -->
+        <section class="pb-12">
+            <div class="bg-surface-dim rounded-2xl p-6 border border-slate-100">
+                <h3 class="font-semibold text-sm uppercase tracking-wide text-ink-muted mb-3">Why build our own?</h3>
+                <div class="text-ink-muted leading-relaxed text-[0.95rem] space-y-3">
+                    <p>
+                        <strong class="text-ink">OpenClaw</strong> is the viral open-source agent that does something similar — but it has serious security issues (CVE-2026-25253, 341 malicious plugins found in its registry, 40k+ exposed instances). Our approach is simpler: one Python script we wrote, running Claude Code with our plugins, behind a private network only we can access. Same result, full control, zero attack surface.
+                    </p>
+                    <p>
+                        <strong class="text-ink">There's also a legal reason.</strong> Anthropic's Terms of Service prohibit using a Claude Max subscription to power third-party products like OpenClaw. OpenClaw can use OpenAI models, but if you want Claude-powered AI employees, Claude Code is the only compliant path — it's Anthropic's own product. Our setup uses the official <code class="bg-slate-200/60 px-1.5 py-0.5 rounded text-xs font-mono">claude</code> CLI with a legitimate Max subscription. No API bypass, no ToS violations.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section class="pb-16">
+            <h2 class="text-2xl font-bold mb-8">How it works</h2>
+            <div class="bg-surface-dim rounded-2xl p-8 border border-slate-100">
+                <div class="flex flex-col items-center gap-4 text-sm">
+                    <!-- You -->
+                    <div class="flex items-center gap-6 w-full justify-center flex-wrap">
+                        <div class="arch-node bg-purple-50 border border-purple-200 rounded-xl px-5 py-3 text-center">
+                            <div class="font-semibold text-purple-800">Natalia</div>
+                            <div class="text-purple-600 text-xs">New York</div>
+                        </div>
+                        <div class="arch-node bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 text-center">
+                            <div class="font-semibold text-blue-800">Nityesh</div>
+                            <div class="text-blue-600 text-xs">India</div>
+                        </div>
+                    </div>
+
+                    <svg class="w-5 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 20 32"><path stroke-linecap="round" stroke-width="2" d="M10 0v28m-5-5l5 5 5-5"/></svg>
+
+                    <!-- Slack -->
+                    <div class="arch-node bg-white border border-slate-200 rounded-xl px-6 py-3 text-center shadow-sm w-full max-w-sm">
+                        <div class="font-semibold">Slack</div>
+                        <div class="text-ink-light text-xs">DM any AI co-worker like a real teammate</div>
+                    </div>
+
+                    <svg class="w-5 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 20 32"><path stroke-linecap="round" stroke-width="2" d="M10 0v28m-5-5l5 5 5-5"/></svg>
+
+                    <!-- Mac Mini -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white w-full max-w-md">
+                        <div class="font-bold mb-1">Mac Mini — New York</div>
+                        <div class="text-slate-400 text-xs mb-4">Always on. Auto-restarts. Private network via Tailscale.</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-slate-700/50 rounded-lg px-3 py-2">Claudie <span class="text-slate-500">PM</span></div>
+                            <div class="bg-slate-700/50 rounded-lg px-3 py-2">Jean-Claude <span class="text-slate-500">Sales</span></div>
+                            <div class="bg-slate-700/50 rounded-lg px-3 py-2">Client Work <span class="text-slate-500">Toolkit</span></div>
+                            <div class="bg-slate-700/50 rounded-lg px-3 py-2">Experimental <span class="text-slate-500">R&D</span></div>
+                        </div>
+                        <div class="mt-3 text-xs text-slate-500 border-t border-slate-700 pt-3">
+                            Claude Code CLI + Plugin Marketplace + MCP Servers + launchd
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Concepts Explained -->
+        <section class="pb-16">
+            <h2 class="text-2xl font-bold mb-2">Concepts explained</h2>
+            <p class="text-ink-muted mb-8">For the curious. Click to expand.</p>
+
+            <div class="space-y-3" id="concepts">
+                <!-- SSH -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">SSH</span>
+                            <span class="text-ink-light text-sm ml-2">Remote terminal access</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> SSH (Secure Shell) lets you open a terminal on another computer over the internet. You type commands on your laptop, they execute on the Mac Mini. Text only — no desktop, no mouse. Think of it as a phone call to the Mac Mini's command line.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> To install software, check logs, restart services, and manage everything on the Mac Mini without being physically there. It's built into macOS — just flip a switch in System Settings.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tailscale -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">Tailscale</span>
+                            <span class="text-ink-light text-sm ml-2">Private network between your devices</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> Tailscale creates an invisible, encrypted tunnel between your devices. Your MacBook in India and the Mac Mini in New York join the same private network — as if they were on the same WiFi. Each device gets a stable address (like 100.x.x.x) that never changes.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> The Mac Mini sits behind an office router with no public address. Without Tailscale, you'd need to configure port forwarding, get a static IP, and punch holes in the firewall — complicated and insecure. Tailscale skips all of that. Install the app, sign in, done. Free for personal use.
+                            <br><br>
+                            <strong class="text-ink">Analogy:</strong> If SSH is a phone call, Tailscale is the phone network. SSH needs a way to reach the Mac Mini — Tailscale provides that path.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- tmux -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">tmux</span>
+                            <span class="text-ink-light text-sm ml-2">Persistent terminal sessions</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> When you SSH into the Mac Mini, your session dies if the connection drops (laptop closes, WiFi blips). tmux keeps your session alive on the Mac Mini regardless. Disconnect, reconnect hours later — everything is exactly where you left it.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> For interactive Claude Code sessions. If you're SSH'd in working with Claude Code directly and your internet hiccups, tmux means you don't lose your work. For the Slack bots, tmux isn't needed — launchd handles that.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- launchd -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">launchd</span>
+                            <span class="text-ink-light text-sm ml-2">macOS process supervisor</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> macOS's built-in system for managing background services. You write a small config file that says "run this script, keep it alive, restart it if it crashes, start it when the computer boots." Apple uses it for its own services.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> This is what makes the Slack bots truly always-on. Bot crashes at 3am? launchd restarts it in seconds. Mac Mini reboots after a power outage? launchd starts all the bots automatically. No human intervention needed.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Socket Mode -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">Socket Mode</span>
+                            <span class="text-ink-light text-sm ml-2">How Slack connects to our bots</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> Normally, Slack bots need a public URL that Slack sends messages to. Socket Mode flips this — our bot reaches out to Slack and holds the connection open. Messages flow through that connection. No public URL, no firewall config, no exposed ports.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> The Mac Mini is behind a private network (Tailscale). It has no public URL. Socket Mode means the bot works perfectly behind any network — it only makes outbound connections, which always work.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mosh -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">Mosh</span>
+                            <span class="text-ink-light text-sm ml-2">SSH for bad connections</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> A drop-in replacement for SSH designed for mobile and high-latency connections. It shows your keystrokes instantly (doesn't wait for the server), survives WiFi switches, and handles packet loss gracefully. In tests, it reduced response time from 16.8 seconds to 0.33 seconds on a lossy link.
+                            <br><br>
+                            <strong class="text-ink">Why do we need it?</strong> India to New York is ~250ms latency. With regular SSH, every keystroke takes a quarter-second round trip — feels sluggish. Mosh makes it feel local. Install on both machines, use <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">mosh</code> instead of <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">ssh</code>.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claude Code CLI -->
+                <div class="border border-slate-150 rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-dim transition-colors">
+                        <div>
+                            <span class="font-semibold">Claude Code CLI</span>
+                            <span class="text-ink-light text-sm ml-2">The engine behind everything</span>
+                        </div>
+                        <svg class="accordion-chevron w-5 h-5 text-ink-light flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="px-5 pb-4 text-[0.92rem] text-ink-muted leading-relaxed">
+                            <strong class="text-ink">What is it?</strong> The <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">claude</code> command-line tool from Anthropic. When the Slack bot receives a message, it runs <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">claude -p "your message"</code> — which gives Claude access to all your files, MCP servers (Google Workspace, Granola, etc.), plugins, and CLAUDE.md context. Powered by the $200/month Max subscription — flat rate, no per-message API costs.
+                            <br><br>
+                            <strong class="text-ink">Why this and not the API?</strong> The CLI inherits everything — your OAuth sessions, plugin marketplace, installed MCP servers, project context. The API would require rebuilding all of that from scratch.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 1: Physical Setup -->
+        <section class="pb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-xs font-bold tracking-widest uppercase text-ink-light">Phase 1</span>
+                <span class="badge-natalia text-xs font-medium px-2 py-0.5 rounded-full">Natalia</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Physical setup</h2>
+            <p class="text-ink-muted mb-8">One-time, in-person. ~20 minutes.</p>
+
+            <div data-role="natalia" class="space-y-6">
+                <div class="bg-purple-50/50 border border-purple-100 rounded-2xl p-6">
+                    <h3 class="font-semibold mb-1">Hey Natalia!</h3>
+                    <p class="text-ink-muted text-[0.92rem] leading-relaxed">
+                        This is your section. You're setting up the Mac Mini so Nityesh can take over remotely from India. Once you're done here, you won't need to touch it again unless there's a hardware issue. Everything below is a checklist — work through it top to bottom.
+                    </p>
+                </div>
+
+                <!-- Step 1: Hardware -->
+                <div>
+                    <h3 class="font-semibold mb-3">1. Plug it in</h3>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Connect the Mac Mini to <strong class="text-ink">power</strong></li>
+                        <li>Connect to the office <strong class="text-ink">ethernet</strong> (the cable that plugs into the wall/router — WiFi works but ethernet is more reliable for a server)</li>
+                        <li>Connect a <strong class="text-ink">monitor, keyboard, and mouse</strong> temporarily (you'll disconnect these when done)</li>
+                        <li>Optional: plug in an <strong class="text-ink">HDMI dummy plug</strong> (~$10 on Amazon) — this tricks the Mac into thinking a monitor is connected, which prevents some graphics quirks when running headless</li>
+                    </ul>
+                </div>
+
+                <!-- Step 2: macOS Setup -->
+                <div>
+                    <h3 class="font-semibold mb-3">2. Initial macOS setup</h3>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Power on and go through the macOS setup wizard</li>
+                        <li>Create a user account — use a name like <strong class="text-ink">every</strong> or <strong class="text-ink">nityesh</strong> (this will be the account used for everything)</li>
+                        <li>Sign in with an Apple ID (needed for App Store / Tailscale installation)</li>
+                        <li>When asked about FileVault (disk encryption): <strong class="text-ink">skip it / turn it off</strong>
+                            <div class="mt-1 text-xs text-ink-light bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                                Why? If the Mac Mini restarts after a power outage, FileVault shows an unlock screen requiring a physical keyboard. Since nobody will be there to type the password, the machine would be stuck. The trade-off is worth it — the Mac is in a secure office and behind Tailscale.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Step 3: System Settings -->
+                <div>
+                    <h3 class="font-semibold mb-3">3. System Settings checklist</h3>
+                    <p class="text-ink-muted text-sm mb-3">Open <strong class="text-ink">System Settings</strong> and configure each of these:</p>
+
+                    <div class="space-y-4">
+                        <div class="bg-surface-dim rounded-xl p-4">
+                            <div class="font-medium text-sm mb-2">Energy</div>
+                            <ul class="checklist space-y-2 text-[0.92rem] text-ink-muted">
+                                <li><strong class="text-ink">Prevent automatic sleeping when the display is off</strong> — toggle ON</li>
+                                <li><strong class="text-ink">Start up automatically after a power failure</strong> — toggle ON</li>
+                                <li><strong class="text-ink">Wake for network access</strong> — toggle ON</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-surface-dim rounded-xl p-4">
+                            <div class="font-medium text-sm mb-2">General &rarr; Sharing</div>
+                            <ul class="checklist space-y-2 text-[0.92rem] text-ink-muted">
+                                <li><strong class="text-ink">Remote Login</strong> (SSH) — toggle ON. Note the username shown (e.g., <code class="bg-slate-200 px-1.5 py-0.5 rounded text-xs font-mono">every@macmini.local</code>)</li>
+                                <li><strong class="text-ink">Screen Sharing</strong> — toggle ON (so Nityesh can see the full desktop remotely when needed)</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-surface-dim rounded-xl p-4">
+                            <div class="font-medium text-sm mb-2">Users & Groups</div>
+                            <ul class="checklist space-y-2 text-[0.92rem] text-ink-muted">
+                                <li><strong class="text-ink">Automatic login</strong> — set to the user account you created (so the Mac logs in by itself after a restart)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Tailscale -->
+                <div>
+                    <h3 class="font-semibold mb-3">4. Install Tailscale</h3>
+                    <p class="text-ink-muted text-[0.92rem] mb-3">Tailscale is the app that connects the Mac Mini to Nityesh's laptop securely.</p>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Open the <strong class="text-ink">Mac App Store</strong>, search for <strong class="text-ink">Tailscale</strong>, install it</li>
+                        <li>Open Tailscale, sign in with the shared account (Nityesh will give you the login — Google, GitHub, or Apple ID)</li>
+                        <li>Once connected, Tailscale shows an IP address like <strong class="text-ink">100.x.x.x</strong> — send this to Nityesh</li>
+                        <li>In Tailscale preferences, enable <strong class="text-ink">"Start Tailscale when I log in"</strong></li>
+                    </ul>
+                </div>
+
+                <!-- Step 5: Homebrew -->
+                <div>
+                    <h3 class="font-semibold mb-3">5. Install Homebrew</h3>
+                    <p class="text-ink-muted text-[0.92rem] mb-3">Homebrew is a package manager — it lets us install tools easily from the terminal. Nityesh needs this to install everything else remotely.</p>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Open <strong class="text-ink">Terminal</strong> (search for it in Spotlight — Cmd+Space, type "Terminal")</li>
+                        <li>Paste this command and press Enter:</li>
+                    </ul>
+                    <div class="code-block mt-3 text-[0.78rem]">
+                        <span class="cmd">/bin/bash</span> -c <span class="string">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>
+                    </div>
+                    <p class="text-ink-light text-xs mt-2">It will ask for your password (the one you set during macOS setup). This takes a few minutes.</p>
+                </div>
+
+                <!-- Step 6: Done -->
+                <div>
+                    <h3 class="font-semibold mb-3">6. Wrap up</h3>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Send Nityesh: the <strong class="text-ink">Tailscale IP</strong>, the <strong class="text-ink">username</strong>, and the <strong class="text-ink">password</strong> for the account you created</li>
+                        <li>Disconnect the monitor, keyboard, and mouse — the Mac Mini runs headless from here</li>
+                        <li>Leave it powered on and connected to ethernet</li>
+                    </ul>
+
+                    <div class="mt-4 bg-green-50 border border-green-100 rounded-xl p-4 text-[0.92rem] text-green-800">
+                        <strong>You're done!</strong> Nityesh takes over from here. The Mac Mini will sit quietly in the office, always on, doing its thing. You'll be able to DM the AI teammates in Slack once everything is set up.
+                    </div>
+                </div>
+
+                <!-- Optional extras -->
+                <div>
+                    <h3 class="font-semibold mb-3 text-ink-muted">Optional (nice to have)</h3>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-light">
+                        <li><strong class="text-ink-muted">Smart plug</strong> (~$15, TP-Link Kasa) — lets Nityesh power-cycle the Mac Mini remotely from India if it ever freezes</li>
+                        <li><strong class="text-ink-muted">Small UPS</strong> (~$50) — battery backup that keeps the Mac Mini alive during brief power outages</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 2: Remote Setup -->
+        <section class="pb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-xs font-bold tracking-widest uppercase text-ink-light">Phase 2</span>
+                <span class="badge-nityesh text-xs font-medium px-2 py-0.5 rounded-full">Nityesh</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Remote setup</h2>
+            <p class="text-ink-muted mb-8">Everything from here is done from your laptop in India, over the internet.</p>
+
+            <div data-role="nityesh" class="space-y-6">
+
+                <!-- Step 1: Tailscale -->
+                <div>
+                    <h3 class="font-semibold mb-3">1. Join the same Tailscale network</h3>
+                    <ul class="checklist space-y-2.5 text-[0.92rem] text-ink-muted">
+                        <li>Install Tailscale on your MacBook: <a href="https://tailscale.com/download/mac" class="text-blue-600 hover:underline" target="_blank">tailscale.com/download/mac</a> or Mac App Store</li>
+                        <li>Sign in with the <strong class="text-ink">same account</strong> Natalia used on the Mac Mini</li>
+                        <li>Both devices should now appear in your Tailscale dashboard</li>
+                    </ul>
+                </div>
+
+                <!-- Step 2: First SSH -->
+                <div>
+                    <h3 class="font-semibold mb-3">2. SSH in for the first time</h3>
+                    <div class="code-block">
+                        <span class="comment"># Replace with the actual username and Tailscale IP from Natalia</span><br>
+                        <span class="cmd">ssh</span> every@100.x.x.x
+                    </div>
+                    <p class="text-ink-muted text-[0.92rem] mt-3">Type <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">yes</code> when asked about the fingerprint. Enter the password Natalia shared. You're now on the Mac Mini.</p>
+                </div>
+
+                <!-- Step 3: Install tools -->
+                <div>
+                    <h3 class="font-semibold mb-3">3. Install essential tools</h3>
+                    <div class="code-block">
+                        <span class="comment"># Install core tools</span><br>
+                        <span class="cmd">brew install</span> tmux mosh git python3<br><br>
+                        <span class="comment"># Install Claude Code</span><br>
+                        <span class="cmd">npm install</span> <span class="flag">-g</span> @anthropic-ai/claude-code<br><br>
+                        <span class="comment"># Sign in to Claude Code with your Max subscription</span><br>
+                        <span class="cmd">claude</span><br>
+                        <span class="comment"># Follow the login prompts — this opens a browser URL you can paste into any browser</span>
+                    </div>
+                </div>
+
+                <!-- Step 4: Set up SSH keys -->
+                <div>
+                    <h3 class="font-semibold mb-3">4. Set up SSH keys (no more passwords)</h3>
+                    <p class="text-ink-muted text-[0.92rem] mb-3">Run this <strong class="text-ink">on your MacBook</strong> (not the Mac Mini):</p>
+                    <div class="code-block">
+                        <span class="comment"># Generate a key pair (press Enter through all prompts)</span><br>
+                        <span class="cmd">ssh-keygen</span> <span class="flag">-t</span> ed25519<br><br>
+                        <span class="comment"># Copy your public key to the Mac Mini</span><br>
+                        <span class="cmd">ssh-copy-id</span> every@100.x.x.x<br><br>
+                        <span class="comment"># Now you can SSH without a password</span><br>
+                        <span class="cmd">ssh</span> every@100.x.x.x
+                    </div>
+                </div>
+
+                <!-- Step 5: Clone repo -->
+                <div>
+                    <h3 class="font-semibold mb-3">5. Clone the repo and set up the Slack bot</h3>
+                    <div class="code-block">
+                        <span class="comment"># On the Mac Mini (via SSH)</span><br>
+                        <span class="cmd">mkdir</span> <span class="flag">-p</span> ~/Documents/Github<br>
+                        <span class="cmd">cd</span> ~/Documents/Github<br>
+                        <span class="cmd">git clone</span> <span class="string">https://github.com/EveryInc/every-consulting.git</span><br><br>
+                        <span class="comment"># Set up the Slack bot</span><br>
+                        <span class="cmd">cd</span> every-consulting/slack-bot<br>
+                        <span class="cmd">python3</span> <span class="flag">-m</span> venv venv<br>
+                        <span class="cmd">source</span> venv/bin/activate<br>
+                        <span class="cmd">pip install</span> <span class="flag">-r</span> requirements.txt<br><br>
+                        <span class="comment"># Configure environment</span><br>
+                        <span class="cmd">cp</span> .env.example .env<br>
+                        <span class="cmd">nano</span> .env  <span class="comment"># Add your Slack tokens and user IDs</span>
+                    </div>
+                </div>
+
+                <!-- Step 6: Test -->
+                <div>
+                    <h3 class="font-semibold mb-3">6. Test it</h3>
+                    <div class="code-block">
+                        <span class="comment"># Start the bot manually</span><br>
+                        <span class="cmd">python</span> claudie_bot.py<br><br>
+                        <span class="comment"># You should see:</span><br>
+                        <span class="string">Claudie starting — authorized users: {'U12345678'}</span>
+                    </div>
+                    <p class="text-ink-muted text-[0.92rem] mt-3">Now DM Claudie in Slack. If you get a response — it's working.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 3: Always On -->
+        <section class="pb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-xs font-bold tracking-widest uppercase text-ink-light">Phase 3</span>
+                <span class="badge-nityesh text-xs font-medium px-2 py-0.5 rounded-full">Nityesh</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Make it always on</h2>
+            <p class="text-ink-muted mb-8">The bot should survive crashes, reboots, and disconnections — forever.</p>
+
+            <div data-role="nityesh" class="space-y-6">
+
+                <div>
+                    <h3 class="font-semibold mb-3">1. Create a launchd service</h3>
+                    <p class="text-ink-muted text-[0.92rem] mb-3">This tells macOS to keep the Slack bot running at all times.</p>
+                    <div class="code-block text-[0.72rem]">
+                        <span class="comment"># Create the plist file</span><br>
+                        <span class="cmd">cat</span> &lt;&lt;'EOF' &gt; ~/Library/LaunchAgents/com.every.claudie-slack.plist<br>
+                        <span class="string">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span><br>
+                        <span class="string">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"</span><br>
+                        <span class="string">  "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;</span><br>
+                        <span class="string">&lt;plist version="1.0"&gt;</span><br>
+                        <span class="string">&lt;dict&gt;</span><br>
+                        <span class="string">    &lt;key&gt;Label&lt;/key&gt;</span><br>
+                        <span class="string">    &lt;string&gt;com.every.claudie-slack&lt;/string&gt;</span><br>
+                        <span class="string">    &lt;key&gt;ProgramArguments&lt;/key&gt;</span><br>
+                        <span class="string">    &lt;array&gt;</span><br>
+                        <span class="string">        &lt;string&gt;/Users/every/Documents/Github/every-consulting/slack-bot/venv/bin/python&lt;/string&gt;</span><br>
+                        <span class="string">        &lt;string&gt;/Users/every/Documents/Github/every-consulting/slack-bot/claudie_bot.py&lt;/string&gt;</span><br>
+                        <span class="string">    &lt;/array&gt;</span><br>
+                        <span class="string">    &lt;key&gt;WorkingDirectory&lt;/key&gt;</span><br>
+                        <span class="string">    &lt;string&gt;/Users/every/Documents/Github/every-consulting/slack-bot&lt;/string&gt;</span><br>
+                        <span class="string">    &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;</span><br>
+                        <span class="string">    &lt;key&gt;KeepAlive&lt;/key&gt;&lt;true/&gt;</span><br>
+                        <span class="string">    &lt;key&gt;StandardOutPath&lt;/key&gt;</span><br>
+                        <span class="string">    &lt;string&gt;/Users/every/Documents/Github/every-consulting/slack-bot/claudie.log&lt;/string&gt;</span><br>
+                        <span class="string">    &lt;key&gt;StandardErrorPath&lt;/key&gt;</span><br>
+                        <span class="string">    &lt;string&gt;/Users/every/Documents/Github/every-consulting/slack-bot/claudie-stderr.log&lt;/string&gt;</span><br>
+                        <span class="string">&lt;/dict&gt;</span><br>
+                        <span class="string">&lt;/plist&gt;</span><br>
+                        EOF
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-3">2. Load and verify</h3>
+                    <div class="code-block">
+                        <span class="comment"># Load the service</span><br>
+                        <span class="cmd">launchctl</span> load ~/Library/LaunchAgents/com.every.claudie-slack.plist<br><br>
+                        <span class="comment"># Verify it's running</span><br>
+                        <span class="cmd">launchctl</span> list | <span class="cmd">grep</span> claudie<br><br>
+                        <span class="comment"># Watch the logs</span><br>
+                        <span class="cmd">tail</span> <span class="flag">-f</span> ~/Documents/Github/every-consulting/slack-bot/claudie.log
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-3">3. Test crash recovery</h3>
+                    <div class="code-block">
+                        <span class="comment"># Find the process ID</span><br>
+                        <span class="cmd">pgrep</span> <span class="flag">-f</span> claudie_bot<br><br>
+                        <span class="comment"># Kill it — launchd should restart it within seconds</span><br>
+                        <span class="cmd">kill</span> $(pgrep -f claudie_bot)<br><br>
+                        <span class="comment"># Check it came back</span><br>
+                        <span class="cmd">sleep</span> 3 && <span class="cmd">pgrep</span> <span class="flag">-f</span> claudie_bot
+                    </div>
+                    <p class="text-ink-muted text-[0.92rem] mt-3">If the process ID changed, launchd restarted it. DM Claudie in Slack to confirm it responds.</p>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-3">4. Test reboot survival</h3>
+                    <div class="code-block">
+                        <span class="comment"># Reboot the Mac Mini remotely</span><br>
+                        <span class="cmd">sudo</span> reboot<br><br>
+                        <span class="comment"># Wait 2-3 minutes, then SSH back in</span><br>
+                        <span class="cmd">ssh</span> every@100.x.x.x<br><br>
+                        <span class="comment"># Check the bot is running</span><br>
+                        <span class="cmd">pgrep</span> <span class="flag">-f</span> claudie_bot
+                    </div>
+                    <p class="text-ink-muted text-[0.92rem] mt-3">DM Claudie in Slack. If it responds — you have an always-on AI assistant.</p>
+
+                    <div class="mt-4 bg-green-50 border border-green-100 rounded-xl p-4 text-[0.92rem] text-green-800">
+                        <strong>It's alive!</strong> The Mac Mini now runs your AI team 24/7. It survives crashes, reboots, and power outages. You can manage everything from India.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 4: The Future -->
+        <section class="pb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-xs font-bold tracking-widest uppercase text-ink-light">Phase 4</span>
+                <span class="badge-both text-xs font-medium px-2 py-0.5 rounded-full">Both</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">What's next</h2>
+            <p class="text-ink-muted mb-8">Once the foundation is solid, the possibilities open up.</p>
+
+            <div data-role="both" class="space-y-4">
+                <div class="border border-slate-100 rounded-xl p-5">
+                    <h3 class="font-semibold mb-1">One bot per AI employee</h3>
+                    <p class="text-ink-muted text-[0.92rem]">Today there's one Slack bot (Claudie). The goal: each plugin becomes its own Slack app — DM Jean-Claude for sales, Claudie for PM, just like DMing a real teammate. Same bot code, different config per identity.</p>
+                </div>
+
+                <div class="border border-slate-100 rounded-xl p-5">
+                    <h3 class="font-semibold mb-1">Browser automation</h3>
+                    <p class="text-ink-muted text-[0.92rem]">Install Playwright on the Mac Mini. The AI can control a real browser — log into apps, fill forms, take screenshots. Anything you can do in Chrome, it can do. Great for tasks that require authentication or interacting with web UIs that don't have APIs.</p>
+                </div>
+
+                <div class="border border-slate-100 rounded-xl p-5">
+                    <h3 class="font-semibold mb-1">Scheduled jobs</h3>
+                    <p class="text-ink-muted text-[0.92rem]">Morning briefings, pipeline refreshes, automated reports — all running on a schedule via launchd cron jobs. The bot's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">--send</code> flag already supports proactive DMs. Wire it to a schedule and you get a daily briefing in Slack every morning.</p>
+                </div>
+
+                <div class="border border-slate-100 rounded-xl p-5">
+                    <h3 class="font-semibold mb-1">Full desktop access</h3>
+                    <p class="text-ink-muted text-[0.92rem]">Screen Sharing over Tailscale gives you full GUI access to the Mac Mini — mouse, windows, everything. Open it via <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">vnc://100.x.x.x</code> from Finder. Useful for logging into apps, managing OAuth sessions, or anything that needs a browser window.</p>
+                </div>
+
+                <div class="border border-slate-100 rounded-xl p-5">
+                    <h3 class="font-semibold mb-1">Multi-user access</h3>
+                    <p class="text-ink-muted text-[0.92rem]">Add more Slack user IDs to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">AUTHORIZED_USERS</code> in the .env file. Anyone on the team can talk to the AI co-workers. The audit log tracks who said what.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="pb-16">
+            <h2 class="text-2xl font-bold mb-2">Good to know</h2>
+            <p class="text-ink-muted mb-8">Practical limitations and how to handle them.</p>
+
+            <div data-role="both" class="overflow-x-auto">
+                <table class="w-full text-[0.88rem]">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="text-left py-3 pr-4 font-semibold text-ink">Scenario</th>
+                            <th class="text-left py-3 font-semibold text-ink">What happens</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ink-muted">
+                        <tr class="border-b border-slate-100">
+                            <td class="py-3 pr-4 font-medium text-ink">Power outage</td>
+                            <td class="py-3">Mac Mini restarts automatically. launchd relaunches the bots. Downtime: 2-3 minutes. A UPS ($50) covers brief outages entirely.</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="py-3 pr-4 font-medium text-ink">Mac Mini freezes</td>
+                            <td class="py-3">Smart plug lets you power-cycle remotely from India. If no smart plug, Natalia presses the power button.</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="py-3 pr-4 font-medium text-ink">Internet outage (NYC)</td>
+                            <td class="py-3">Nothing you can do remotely. The Slack bot reconnects automatically when internet returns. A USB LTE dongle (~$30/mo) provides cellular backup if this is a concern.</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="py-3 pr-4 font-medium text-ink">Claude Max rate limits</td>
+                            <td class="py-3">~900 messages per 5-hour rolling window. Plenty for normal use. If you hit limits, Max lets you buy overflow at API rates — no hard wall.</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="py-3 pr-4 font-medium text-ink">SSH latency (India→NYC)</td>
+                            <td class="py-3">~250ms. Noticeable when typing in terminal. Use Mosh for a smoother experience. For Slack, latency is irrelevant — you type in Slack, wait for a response.</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 pr-4 font-medium text-ink">macOS updates</td>
+                            <td class="py-3">Minor updates: trigger via SSH (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">sudo softwareupdate -i -a</code>). Major upgrades may need someone physically present.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Admin Reference -->
+        <section class="pb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-xs font-bold tracking-widest uppercase text-ink-light">Reference</span>
+                <span class="badge-nityesh text-xs font-medium px-2 py-0.5 rounded-full">Nityesh</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Day-to-day admin</h2>
+            <p class="text-ink-muted mb-8">Commands you'll use regularly to manage the Mac Mini.</p>
+
+            <div data-role="nityesh">
+                <div class="code-block text-[0.78rem]">
+                    <span class="comment"># Connect to Mac Mini</span><br>
+                    <span class="cmd">ssh</span> every@100.x.x.x        <span class="comment"># or: mosh every@100.x.x.x</span><br><br>
+
+                    <span class="comment"># Check bot status</span><br>
+                    <span class="cmd">launchctl</span> list | <span class="cmd">grep</span> claudie<br>
+                    <span class="cmd">pgrep</span> <span class="flag">-f</span> claudie_bot<br><br>
+
+                    <span class="comment"># View live logs</span><br>
+                    <span class="cmd">tail</span> <span class="flag">-f</span> ~/Documents/Github/every-consulting/slack-bot/claudie.log<br><br>
+
+                    <span class="comment"># Restart the bot</span><br>
+                    <span class="cmd">launchctl</span> unload ~/Library/LaunchAgents/com.every.claudie-slack.plist<br>
+                    <span class="cmd">launchctl</span> load ~/Library/LaunchAgents/com.every.claudie-slack.plist<br><br>
+
+                    <span class="comment"># Pull latest code</span><br>
+                    <span class="cmd">cd</span> ~/Documents/Github/every-consulting && <span class="cmd">git</span> pull<br><br>
+
+                    <span class="comment"># Interactive Claude Code session (use tmux to persist)</span><br>
+                    <span class="cmd">tmux</span> new <span class="flag">-s</span> claude<br>
+                    <span class="cmd">cd</span> ~/Manager/Every && <span class="cmd">claude</span><br>
+                    <span class="comment"># Detach: Ctrl+B then D | Reattach: tmux attach -t claude</span><br><br>
+
+                    <span class="comment"># Full desktop access (from your Mac — in Finder)</span><br>
+                    <span class="comment"># Go → Connect to Server → vnc://100.x.x.x</span><br><br>
+
+                    <span class="comment"># Reboot remotely</span><br>
+                    <span class="cmd">sudo</span> reboot
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="pb-12 pt-8 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs text-ink-light">
+                <span>Every Consulting &middot; AI Home Base</span>
+                <span>Built with Claude Code</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // View toggle
+        function setView(view) {
+            document.body.className = document.body.className.replace(/view-\w+/, '') + ` view-${view}`;
+
+            // Update button styles
+            ['all', 'natalia', 'nityesh'].forEach(v => {
+                const btn = document.getElementById(`btn-${v}`);
+                if (v === view) {
+                    btn.className = 'px-3 py-1.5 rounded-full font-medium transition-all bg-white shadow-sm text-ink';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-full font-medium transition-all text-ink-muted hover:text-ink';
+                }
+            });
+        }
+
+        // Accordion
+        function toggleAccordion(button) {
+            const content = button.nextElementSibling;
+            const chevron = button.querySelector('.accordion-chevron');
+            content.classList.toggle('open');
+            chevron.classList.toggle('open');
+        }
+
+        // Nav shadow on scroll
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('nav-stuck', window.scrollY > 10);
+        });
+    </script>
+
+</body>
+</html>
