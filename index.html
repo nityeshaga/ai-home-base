@@ -438,10 +438,14 @@
                 <!-- Step 4: Tailscale -->
                 <div>
                     <h3 class="font-semibold mb-3">4. Install Tailscale</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-[0.92rem] mb-3">Tailscale is the app that connects the Mac Mini to Nityesh's laptop securely.</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-[0.92rem] mb-3">Tailscale creates a private encrypted network between the Mac Mini and Nityesh's laptop in India — so he can manage it remotely from anywhere.</p>
                     <ul class="checklist space-y-2.5 text-[0.92rem] text-slate-500 dark:text-slate-400">
                         <li>Open the <strong class="text-slate-900 dark:text-slate-100">Mac App Store</strong>, search for <strong class="text-slate-900 dark:text-slate-100">Tailscale</strong>, install it</li>
-                        <li>Open Tailscale, sign in with the shared account (Nityesh will give you the login — Google, GitHub, or Apple ID)</li>
+                        <li>Open Tailscale and sign in with <strong class="text-slate-900 dark:text-slate-100">your own GitHub or Google account</strong>
+                            <div class="mt-1 text-xs text-slate-400 dark:text-slate-500 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg px-3 py-2">
+                                <strong class="text-blue-800 dark:text-blue-400">How this works:</strong> Nityesh will invite you to his Tailscale network (called a "tailnet") before you do this step. Check your email for an invite from Tailscale. When you sign in with your own account, it will ask you to accept the invite and join his network. No need to share anyone's credentials.
+                            </div>
+                        </li>
                         <li>Once connected, Tailscale shows an IP address like <strong class="text-slate-900 dark:text-slate-100">100.x.x.x</strong> — send this to Nityesh</li>
                         <li>In Tailscale preferences, enable <strong class="text-slate-900 dark:text-slate-100">"Start Tailscale when I log in"</strong></li>
                     </ul>
@@ -507,11 +511,15 @@
 
                 <!-- Step 1: Tailscale -->
                 <div>
-                    <h3 class="font-semibold mb-3">1. Join the same Tailscale network</h3>
+                    <h3 class="font-semibold mb-3">1. Invite Natalia and connect to Tailscale</h3>
                     <ul class="checklist space-y-2.5 text-[0.92rem] text-slate-500 dark:text-slate-400">
-                        <li>Install Tailscale on your MacBook: <a href="https://tailscale.com/download/mac" class="text-blue-600 hover:underline" target="_blank">tailscale.com/download/mac</a> or Mac App Store</li>
-                        <li>Sign in with the <strong class="text-slate-900 dark:text-slate-100">same account</strong> Natalia used on the Mac Mini</li>
-                        <li>Both devices should now appear in your Tailscale dashboard</li>
+                        <li><strong class="text-slate-900 dark:text-slate-100">Before Natalia does step 4:</strong> Go to <a href="https://login.tailscale.com/admin/users" class="text-blue-600 hover:underline" target="_blank">login.tailscale.com/admin</a> &rarr; Users &rarr; Invite user. Enter Natalia's email. She'll get an invite to join your tailnet.
+                            <div class="mt-1 text-xs text-slate-400 dark:text-slate-500 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg px-3 py-2">
+                                <strong class="text-blue-800 dark:text-blue-400">Your tailnet:</strong> <code class="bg-blue-100/50 dark:bg-blue-900/50 px-1 py-0.5 rounded text-xs font-mono">nityeshaga.github</code> — you're already logged in with your GitHub account. Natalia signs in with her own account and joins your network. No credential sharing needed.
+                            </div>
+                        </li>
+                        <li>Install Tailscale on your MacBook (if not already installed): <a href="https://tailscale.com/download/mac" class="text-blue-600 hover:underline" target="_blank">tailscale.com/download/mac</a> or Mac App Store</li>
+                        <li>Once Natalia completes step 4 on her end, both the Mac Mini and your MacBook should appear in your <a href="https://login.tailscale.com/admin/machines" class="text-blue-600 hover:underline" target="_blank">Tailscale dashboard</a></li>
                     </ul>
                 </div>
 
