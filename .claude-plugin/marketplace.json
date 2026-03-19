@@ -1,0 +1,25 @@
+{
+  "name": "ai-home-base",
+  "owner": {
+    "name": "Every Consulting",
+    "email": "nityesh@every.to"
+  },
+  "metadata": {
+    "description": "AI PM infrastructure for Every Consulting — Claudie Slack bot, tactical skills, and always-on automation running on a Mac Mini in NYC.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "more-ai",
+      "source": "./plugins/more-ai",
+      "description": "Other AI models for tasks they excel at — Gemini image generation and Gemini thinking.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "tactical",
+      "source": "./plugins/tactical",
+      "description": "Structured workflows for thinking, creativity, decision-making, and operational work — brainstorming sessions, inbox management with learn-by-observation calibration.",
+      "version": "1.0.0"
+    }
+  ]
+}
